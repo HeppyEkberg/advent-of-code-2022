@@ -13,7 +13,7 @@ class DayOneCommand extends Command
 
     public function handle()
     {
-        $puzzle = File::get(base_path('advent/Day1/puzzle'));
+        $puzzle = File::get(dirname(__FILE__) . '/puzzle');
 
         $elvesCalories = Str::of($puzzle)->explode(PHP_EOL . PHP_EOL)
             ->map(fn($elf) => Str::of($elf)->explode(PHP_EOL)->map(fn($calories) => (int) $calories)->sum())
