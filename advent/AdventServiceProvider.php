@@ -2,7 +2,6 @@
 
 namespace Advent;
 
-use Advent\Day1\DayOneCommand;
 use Illuminate\Support\ServiceProvider;
 
 class AdventServiceProvider extends ServiceProvider
@@ -15,7 +14,8 @@ class AdventServiceProvider extends ServiceProvider
     public function register()
     {
         $this->commands([
-            DayOneCommand::class,
+            Day1\Command::class,
+            Day2\Command::class,
         ]);
     }
 

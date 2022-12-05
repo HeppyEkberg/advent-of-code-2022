@@ -2,13 +2,13 @@
 
 namespace Advent\Day1;
 
-use Illuminate\Console\Command;
+use Illuminate\Console\Command as Cmd;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
-class DayOneCommand extends Command
+class Command extends Cmd
 {
-    protected $signature = 'day:one';
+    protected $signature = 'day:1';
     protected $description = '';
 
     public function handle()
