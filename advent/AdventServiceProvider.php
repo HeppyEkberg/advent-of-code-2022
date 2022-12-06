@@ -16,6 +16,7 @@ class AdventServiceProvider extends ServiceProvider
         $this->commands([
             Day1\Command::class,
             Day2\Command::class,
+            Day3\Command::class,
         ]);
     }
 
