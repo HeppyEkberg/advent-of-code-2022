@@ -38,6 +38,16 @@ class Command extends Cmd
         self::SCISSOR => self::PAPER,
     ];
 
+    const SCENARIO = [
+        'X' => self::LOOSE,
+        'Y' => self::DRAW,
+        'Z' => self::WIN,
+    ];
+
+    const LOOSE = 'LOOSE';
+    const WIN = 'WIN';
+    const DRAW = 'DRAW';
+
     public function handle()
     {
         $puzzle = File::get(dirname(__FILE__) . '/puzzle');
@@ -49,7 +59,10 @@ class Command extends Cmd
 
         throw_if($part1 != 10718, new Exception('Part 1 is no longer correct'));
 
+        $part2 = $this->part2($games);
+
         $this->info("Total score: {$part1}");
+        $this->info("Total score: {$part2}");
     }
 
     public function part1(Collection $games)
@@ -67,6 +80,38 @@ class Command extends Cmd
             ];
         });
 
+        return $this->calculate($games);
+    }
+
+    public function part2(Collection $games) {
+        $games = $games->map(function($game) {
+            $choices = explode(' ', $game);
+            $opponent = $this->transform($choices[0]);
+            $scenario = self::SCENARIO[$choices[1]];
+
+            return [
+                'original' => $game,
+                'scenario' => $scenario,
+                'opponent' => $opponent,
+            ];
+        });
+
+
+        $games = $games->map(function ($game) {
+            $game['mine'] = match ($game['scenario']) {
+                self::WIN => $this->win($game['opponent']),
+                self::DRAW => $this->draw($game['opponent']),
+                self::LOOSE => $this->loose($game['opponent']),
+            };
+
+            return $game;
+        });
+
+        return $this->calculate($games);
+    }
+
+    protected function calculate(Collection $games)
+    {
         $wins = $games->filter(function(array $game) {
             return $this->wins($game['mine'], $game['opponent']);
         });
@@ -88,5 +133,20 @@ class Command extends Cmd
     public function transform($choice): string
     {
         return self::MAP[$choice];
+    }
+
+    private function win($opponent)
+    {
+        return collect(self::WINS_AGAINST)->search($opponent);
+    }
+
+    private function draw($opponent)
+    {
+        return $opponent;
+    }
+
+    private function loose($opponent)
+    {
+        return collect(self::WINS_AGAINST)->get($opponent);
     }
 }
