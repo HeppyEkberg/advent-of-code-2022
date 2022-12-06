@@ -3,8 +3,8 @@
 namespace Advent\Day3;
 
 use Illuminate\Console\Command as Cmd;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 
 class Command extends Cmd
 {
@@ -29,7 +29,25 @@ class Command extends Cmd
             });
 
         $total = $rucksacks->sum('priority');
+        $totalBadges = $this->part2($rucksacks);
         $this->info("Total priority is: {$total}");
+        $this->info("Total group badges is: {$totalBadges}");
+    }
+
+    public function part2(Collection $rucksacks): ?int
+    {
+        return $rucksacks->chunk(3)
+            ->map(function ($group) {
+                $items = $group->map(fn($rucksack) => array_merge(...$rucksack['compartments']))->values();
+                $badge = collect($items->get(0))->intersect($items->get(1))->intersect($items->get(2))->unique()->first();
+
+                return [
+                    'group' => $group,
+                    'badge' => $badge,
+                    'priority' => $this->priority($badge),
+                ];
+            })
+            ->sum('priority');
     }
 
     private function priority(?string $type): ?int
