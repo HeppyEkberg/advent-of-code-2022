@@ -2,6 +2,7 @@
 
 namespace Advent\Day4;
 
+use Closure;
 use Illuminate\Console\Command as Cmd;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
@@ -14,7 +15,7 @@ class Command extends Cmd
 
     public function handle()
     {
-        // $this->tests();
+         // $this->tests();
 
         $puzzle = File::get(dirname(__FILE__) . '/puzzle');
 
@@ -22,9 +23,13 @@ class Command extends Cmd
             ->explode(PHP_EOL)
             ->filter();
 
-        $result = $this->exc($inputs)->count();
+        $result = $this->exc($inputs);
 
-        $this->info("Total matches: $result");
+        $contains = $result->where('contains', true)->count();
+        $overlaps = $result->where('overlaps', true)->count();
+
+        $this->info("Total contains: $contains");
+        $this->info("Total overlaps: $overlaps");
     }
 
     public function exc(Collection $inputs): Collection
@@ -39,11 +44,14 @@ class Command extends Cmd
                 'firstRange' => $this->getRange($split[0]),
                 'secondRange' => $this->getRange($split[1]),
             ];
-        })->filter(function (array $couple) {
+        })->map(function (array $couple) {
             $firstRange = $couple['firstRange'];
             $secondRange = $couple['secondRange'];
 
-            return $this->contains($firstRange, $secondRange);
+            return $couple + [
+                    'contains' => $this->contains($firstRange, $secondRange),
+                    'overlaps' => $this->overlaps($firstRange, $secondRange),
+                ];
         });
     }
 
@@ -59,7 +67,7 @@ class Command extends Cmd
 
     public function test($a, $b, $expect = true)
     {
-        $result = $this->exc(collect(["$a,$b"]))->count() > 0;
+        $result = $this->exc(collect(["$a,$b"]))->where('contains', true)->count() > 0;
 
         if($result != $expect) {
             throw new \Exception("$a,$b does not match expected: $expect");
@@ -73,7 +81,7 @@ class Command extends Cmd
         }
     }
 
-    public function contains(Collection $firstRange, Collection $secondRange)
+    public function contains(Collection $firstRange, Collection $secondRange): bool
     {
         if($firstRange->intersect($secondRange)->count() == $firstRange->count()) {
             return true;
@@ -83,6 +91,15 @@ class Command extends Cmd
             return true;
         }
 
+
+        return false;
+    }
+
+    public function overlaps(Collection $firstRange, Collection $secondRange)
+    {
+        if($firstRange->intersect($secondRange)->count() > 0) {
+            return true;
+        }
 
         return false;
     }
