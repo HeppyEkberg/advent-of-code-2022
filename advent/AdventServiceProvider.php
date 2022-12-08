@@ -17,6 +17,7 @@ class AdventServiceProvider extends ServiceProvider
             Day1\Command::class,
             Day2\Command::class,
             Day3\Command::class,
+            Day4\Command::class,
         ]);
     }
 
