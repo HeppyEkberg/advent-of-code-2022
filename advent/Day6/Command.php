@@ -13,31 +13,41 @@ class Command extends Cmd
     protected $description = '';
 
     public Collection $stacks;
+
     public function handle()
     {
         $puzzle = File::get(dirname(__FILE__) . '/puzzle');
 
-        [$previous, $iterations] = Str::of($puzzle)
+        [$part1, $part1iterations] = Str::of($puzzle)
             ->trim()
             ->split(1)
-            ->reduceSpread(function (Collection $previous, $iterations, $character) {
-                if($previous->unique()->count() == 4) {
-                    return [$previous, $iterations];
-                }
+            ->reduceSpread($this->firstUniqueCharacters(4), collect(), 0);
 
-                if($previous->count() > 3) {
-                    $previous->shift();
-                }
+        [$part2, $part2iterations] = Str::of($puzzle)
+            ->trim()
+            ->split(1)
+            ->reduceSpread($this->firstUniqueCharacters(14), collect(), 0);
 
-                $previous->add($character);
-                $iterations = $iterations + 1;
-
-                return [$previous, $iterations];
-            }, collect(), 0);
-
-        dd($previous, $iterations, strlen($puzzle));
+        $this->info("Part 1 marker detected after: {$part1iterations} (".$part1->implode('').")");
+        $this->info("Part 2 marker detected after: {$part2iterations} (".$part2->implode('').")");
     }
 
+    public function firstUniqueCharacters(int $characters) {
+        return function (Collection $previous, $iterations, $character) use ($characters) {
+            if($previous->unique()->count() == $characters) {
+                return [$previous, $iterations];
+            }
+
+            if($previous->count() > ($characters - 1)) {
+                $previous->shift();
+            }
+
+            $previous->add($character);
+            $iterations = $iterations + 1;
+
+            return [$previous, $iterations];
+        };
+    }
 }
 
 
